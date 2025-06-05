@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Own Your Mornings | Daily Challenges</title>
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --secondary: #4D44DB;
+            --light: #F8F9FA;
+            --dark: #212529;
+            --success: #28A745;
+            --warning: #FFC107;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: var(--dark);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+
+        header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .date-display {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        .challenge-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .challenge-card h2 {
+            color: var(--secondary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .challenge-card h2 i {
+            margin-right: 10px;
+            font-size: 1.5rem;
+        }
+
+        .challenge-card p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .progress-container {
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            text-align: right;
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        .btn-secondary {
+            background-color: #e9ecef;
+            color: var(--dark);
+        }
+
+        .btn-secondary:hover {
+            background-color: #dee2e6;
+        }
+
+        .completed {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: var(--success);
+            color: white;
+            padding: 5px 15px;
+            border-bottom-left-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .qr-scanner-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-scanner-container.active {
+            display: flex;
+        }
+
+        #qr-video {
+            width: 80%;
+            max-width: 500px;
+            border: 3px solid white;
+            border-radius: 5px;
+        }
+
+        .qr-close {
+            margin-top: 20px;
+            background-color: var(--warning);
+            color: var(--dark);
+        }
+
+        .streak-display {
+            background-color: var(--secondary);
+            color: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .streak-count {
+            font-size: 2rem;
+        }
+
+        .streak-label {
+            text-align: left;
+        }
+
+        .streak-label small {
+            display: block;
+            opacity: 0.8;
+            font-weight: normal;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                padding: 15px;
+            }
+            
+            header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Own Your Mornings</h1>
+            <p>Start your day with purpose and energy</p>
+        </header>
+
+        <div class="streak-display">
+            <div class="streak-label">
+                Current Streak<br>
+                <small>Keep it going!</small>
+            </div>
+            <div class="streak-count" id="streak-count">0</div>
+        </div>
+
+        <div class="date-display" id="current-date">
+            <!-- Date will be inserted by JavaScript -->
+        </div>
+
+        <div class="challenge-card" id="steps-challenge">
+            <h2><i class="fas fa-walking"></i> Morning Steps Challenge</h2>
+            <p>Walk 1000 steps within the first hour of waking up to boost your metabolism.</p>
+            
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress" id="steps-progress"></div>
+                </div>
+                <div class="progress-text" id="steps-text">0/1000 steps</div>
+            </div>
+            
+            <button class="btn btn-block" id="sync-steps">Sync Fitness Device</button>
+            <button class="btn btn-block btn-secondary mt-2 hidden" id="simulate-steps">Simulate Steps (Demo)</button>
+        </div>
+
+        <div class="challenge-card" id="qr-challenge">
+            <h2><i class="fas fa-qrcode"></i> Morning QR Scan</h2>
+            <p>Scan the QR code in your bathroom to confirm you've completed your morning routine.</p>
+            
+            <button class="btn btn-block" id="scan-qr">Scan QR Code</button>
+        </div>
+
+        <button class="btn btn-block btn-secondary" id="complete-all" disabled>Complete Morning Routine</button>
+    </div>
+
+    <div class="qr-scanner-container" id="qr-scanner">
+        <video id="qr-video"></video>
+        <button class="btn qr-close" id="qr-close">Close Scanner</button>
+    </div>
+
+    <script>
+        // DOM Elements
+        const currentDateEl = document.getElementById('current-date');
+        const streakCountEl = document.getElementById('streak-count');
+        const stepsProgressEl = document.getElementById('steps-progress');
+        const stepsTextEl = document.getElementById('steps-text');
+        const syncStepsBtn = document.getElementById('sync-steps');
+        const simulateStepsBtn = document.getElementById('simulate-steps');
+        const scanQrBtn = document.getElementById('scan-qr');
+        const qrScannerEl = document.getElementById('qr-scanner');
+        const qrVideoEl = document.getElementById('qr-video');
+        const qrCloseBtn = document.getElementById('qr-close');
+        const completeAllBtn = document.getElementById('complete-all');
+        const stepsChallengeEl = document.getElementById('steps-challenge');
+        const qrChallengeEl = document.getElementById('qr-challenge');
+
+        // App State
+        let state = {
+            steps: 0,
+            stepsCompleted: false,
+            qrScanned: false,
+            streak: 0,
+            lastCompletedDate: null
+        };
+
+        // Initialize the app
+        function init() {
+            // Load saved state from localStorage
+            const savedState = localStorage.getItem('morningChallengesState');
+            if (savedState) {
+                state = JSON.parse(savedState);
+            }
+
+            // Update UI with current state
+            updateDateDisplay();
+            updateStreakDisplay();
+            updateStepsDisplay();
+            updateQRChallengeDisplay();
+            checkAllCompleted();
+
+            // For demo purposes, show the simulate button
+            simulateStepsBtn.classList.remove('hidden');
+        }
+
+        // Update the current date display
+        function updateDateDisplay() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            currentDateEl.textContent = now.toLocaleDateString('en-US', options);
+        }
+
+        // Update the streak display
+        function updateStreakDisplay() {
+            streakCountEl.textContent = state.streak;
+        }
+
+        // Update the steps challenge display
+        function updateStepsDisplay() {
+            const progress = Math.min((state.steps / 1000) * 100, 100);
+            stepsProgressEl.style.width = `${progress}%`;
+            stepsTextEl.textContent = `${state.steps}/1000 steps`;
+
+            if (state.steps >= 1000 && !state.stepsCompleted) {
+                state.stepsCompleted = true;
+                markChallengeComplete(stepsChallengeEl);
+                checkAllCompleted();
+                saveState();
+            }
+        }
+
+        // Update the QR challenge display
+        function updateQRChallengeDisplay() {
+            if (state.qrScanned) {
+                markChallengeComplete(qrChallengeEl);
+                checkAllCompleted();
+            }
+        }
+
+        // Mark a challenge as complete in the UI
+        function markChallengeComplete(cardEl) {
+            const completedEl = document.createElement('div');
+            completedEl.className = 'completed';
+            completedEl.textContent = 'COMPLETED';
+            cardEl.appendChild(completedEl);
+
+            const buttons = cardEl.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('btn-secondary');
+            });
+        }
+
+        // Check if all challenges are completed
+        function checkAllCompleted() {
+            if (state.stepsCompleted && state.qrScanned) {
+                completeAllBtn.disabled = false;
+                completeAllBtn.textContent = 'Celebrate Your Morning!';
+            } else {
+                completeAllBtn.disabled = true;
+                completeAllBtn.textContent = 'Complete Morning Routine';
+            }
+        }
+
+        // Save state to localStorage
+        function saveState() {
+            localStorage.setItem('morningChallengesState', JSON.stringify(state));
+        }
+
+        // Complete all challenges and update streak
+        function completeAllChallenges() {
+            // Check if we've already completed today
+            const today = new Date().toDateString();
+            if (state.lastCompletedDate === today) return;
+
+            // Update streak
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            if (state.lastCompletedDate === yesterday.toDateString() || state.streak === 0) {
+                state.streak++;
+            } else if (state.lastCompletedDate !== today) {
+                // Broken streak
+                state.streak = 1;
+            }
+
+            state.lastCompletedDate = today;
+            updateStreakDisplay();
+            saveState();
+
+            // Show celebration
+            alert(`🎉 Congratulations! You've completed your morning routine! Current streak: ${state.streak} days`);
+        }
+
+        // Event Listeners
+        syncStepsBtn.addEventListener('click', () => {
+            alert('Connecting to your fitness device... (This would connect to HealthKit/Google Fit in a real app)');
+        });
+
+        simulateStepsBtn.addEventListener('click', () => {
+            // Simulate getting steps - in a real app this would come from a fitness API
+            state.steps = 1000;
+            updateStepsDisplay();
+            saveState();
+        });
+
+        scanQrBtn.addEventListener('click', () => {
+            // Show QR scanner
+            qrScannerEl.classList.add('active');
+
+            // In a real app, we would use a QR scanning library
+            // For this demo, we'll just simulate scanning after a delay
+            setTimeout(() => {
+                state.qrScanned = true;
+                qrScannerEl.classList.remove('active');
+                updateQRChallengeDisplay();
+                saveState();
+                alert('QR Code scanned successfully! Morning routine confirmed.');
+            }, 1500);
+        });
+
+        qrCloseBtn.addEventListener('click', () => {
+            qrScannerEl.classList.remove('active');
+        });
+
+        completeAllBtn.addEventListener('click', completeAllChallenges);
+
+        // Initialize the app
+        init();
+    </script>
+</body>
+</html>
